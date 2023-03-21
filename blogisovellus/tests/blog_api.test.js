@@ -65,6 +65,62 @@ describe('adding a new blog', () => {
       expect(titles[titles.length-1]).toEqual("Test")
     })
   })
+
+  test('if likes field is not provided, default to 0', async () => {
+    const newBlog = {
+      title: 'Test',
+      author: 'Test',
+      url: 'http://testurl.com'
+    }
+  
+    const res = await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(201)
+      .expect('Content-Type', /application\/json/)
+  
+    expect(res.body.likes).toBe(0)
+  })
+  
+
+  test('blog without title and url returns 400 Bad Request', async () => {
+    const newBlog = {
+      author: 'Test',
+      likes: 5
+    }
+  
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(400)
+  })
+  
+  test('blog without title returns 400 Bad Request', async () => {
+    const newBlog = {
+      author: 'Test',
+      url: 'http://testurl.com',
+      likes: 5
+    }
+  
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(400)
+  })
+  
+  test('blog without url returns 400 Bad Request', async () => {
+    const newBlog = {
+      title: 'Test',
+      author: 'Test',
+      likes: 5
+    }
+  
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(400)
+  })
+  
   
 
 afterAll(async () => {
