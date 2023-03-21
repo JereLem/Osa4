@@ -3,8 +3,8 @@ const express = require('express');
 
 const router = express.Router();
 
-router.get('/', (_req, res) => {
-  Blog.find({}).then((blogs) => {
+router.get('/', async (_req, res) => {
+  const blogs = await Blog.find({}).then((blogs) => {
     res.json(blogs);
   });
 });
