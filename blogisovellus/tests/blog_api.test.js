@@ -33,7 +33,7 @@ describe('returned blog has an id field', () => {
       const res = await api.get('/api/blogs')
       const blogs = res.body
       blogs.forEach(blog => {
-        expect(blog.id).toBeDefined()
+        expect(blog._id).toBeDefined()
       })
     })
   })
@@ -121,6 +121,54 @@ describe('adding a new blog', () => {
       .expect(400)
   })
   
+
+  // Test deleting blog by id
+  test('a blog can be deleted', async () => {
+    const res = await api.get('/api/blogs')
+    const blogsAtStart = res.body
+
+
+    const blogToDelete = blogsAtStart[0];
+  
+    await api.delete(`/api/blogs/${blogToDelete._id}`).expect(204);
+
+    const res2 = await api.get('/api/blogs')
+    const blogsAtEnd = res2.body;
+  
+    expect(blogsAtEnd.length).toBe(blogsAtStart.length-1);
+  
+    const titles = blogsAtEnd.map(b => b.title);
+    expect(titles).not.toContain(blogToDelete.title);
+  });
+
+
+  // Test editing blog
+  test('a blog can be updated', async () => {
+    const res = await api.get('/api/blogs')
+    const blogsAtStart = res.body
+    const blogToUpdate = blogsAtStart[0];
+    console.log(blogToUpdate.id);
+    const blog = {
+      title: "This title was changed",
+      author: "This author was changed",
+      url: "This url was changed",
+      likes: 20,
+    };
+
+    await api
+      .put(`/api/blogs/${blogToUpdate._id}`)
+      .send(blog)
+      .expect(200)
+      .expect('Content-Type', /application\/json/);
+
+    const res2 = await api.get('/api/blogs')
+    const blogsAtEnd = res2.body;
+
+    const updatedBlog = blogsAtEnd[0];
+    expect(blogsAtEnd.length).toBe(blogsAtStart.length);
+    expect(updatedBlog.likes).toBe(20);
+  });
+
   
 
 afterAll(async () => {
