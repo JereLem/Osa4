@@ -1,4 +1,5 @@
 const router = require('./controllers/blogcontroller');
+const router2 = require('./controllers/usercontroller');
 const config = require('./utils/config');
 const cors = require('cors');
 const mongoose = require('mongoose');
@@ -12,5 +13,6 @@ app.use(cors());
 app.use(express.json());
 
 app.use('/api/blogs', router);
+app.use('/api/users', router2)
 
 module.exports = app;
