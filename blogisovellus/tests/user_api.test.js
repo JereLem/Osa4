@@ -7,22 +7,21 @@ const app = require('../app')
 const api = supertest(app)
 
 
-describe('when there is initially one user at db', () => {
-  beforeEach(async () => {
+
+beforeEach(async () => {
     await User.deleteMany({})
-
-    const passwordHash = await bcrypt.hash('sekret', 10)
-    const user = new User({ username: 'root', passwordHash })
-
+    const passwordHash = await bcrypt.hash('salainen', 10)
+    const user = new User({ username: 'Erkki', passwordHash })
     await user.save()
-  })
-
-  test('creation succeeds with a fresh username', async () => {
+});
+  
+describe('User creation', () => {
+  test('Fresh username', async () => {
     const usersAtStart = await helper.usersInDb()
 
     const newUser = {
-      username: 'Erkki',
-      name: 'Erkki Esimerkki',
+      username: 'Erkki2',
+      name: 'Erkki Esimerkillinen',
       password: 'salainen',
     }
 
@@ -38,4 +37,55 @@ describe('when there is initially one user at db', () => {
     const usernames = usersAtEnd.map(u => u.username)
     expect(usernames).toContain(newUser.username)
   })
+  test('Invalid username', async () => {
+  
+    const newUser = {
+        username: 'Er',
+        name: 'Erkki Esimerkki',
+        password: 'salasana',
+    }
+  
+    await api
+    .post('/api/users')
+    .send(newUser)
+    .expect(400)
+    .expect('Content-Type', /application\/json/)
+  })
+
+  test('Invalid password', async () => {
+  
+    const newUser = {
+        username: 'Erkki',
+        name: 'Erkki Esimerkki',
+        password: 'sa',
+    }
+  
+    await api
+    .post('/api/users')
+    .send(newUser)
+    .expect(400)
+    .expect('Content-Type', /application\/json/)
+  })
+
+  test('Duplicate username', async () => {
+  
+    const newUser = {
+        username: 'Erkki',
+        name: 'Erkki Esim',
+        password: 'salainen',
+    }
+
+    const countAtStart = await User.countDocuments();
+  
+    const res = await api
+    .post('/api/users')
+    .send(newUser)
+    .expect(400)
+    .expect('Content-Type', /application\/json/)
+
+    const countAtEnd = await User.countDocuments();
+  
+  expect(res.body.error).toContain('Username must be unique');
+  expect(countAtStart).toEqual(countAtEnd);
+})
 })
